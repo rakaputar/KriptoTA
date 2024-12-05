@@ -2,6 +2,7 @@
 session_start();
 include 'koneksi.php';
 include 'islogin.php';
+include 'kripto.php';
 
 ?>
 
@@ -118,74 +119,87 @@ include 'islogin.php';
 
 
                 <div class="komentar">
-                    <div class="komentardalam">
-                        <h3>Komentar</h3>
+    <div class="komentardalam">
+        <h3>Komentar</h3>
+        <hr>
+        <div class="bg-light py-2 px-3 rounded">
+            <?php
+            // Sertakan file kripto.php dan parameter dekripsi
+            include 'kripto.php';
+            $shift = 3; // Nilai shift untuk Caesar Cipher
+            $key = 'kriptoo'; // Kunci untuk XOR Cipher
+
+            // Ambil data komentar dari database
+            $idberita = $_GET['id_berita'];
+            $query = mysqli_query($koneksi, "SELECT * FROM komentar WHERE id_beritakomen='$idberita'") or die(mysqli_error($koneksi));
+            
+            while ($komentar = mysqli_fetch_array($query)) {
+                // Dekripsi teks komentar
+                $decrypted_isi = super_decrypt($komentar['isi'], $shift, $key);
+            ?>
+                <div class="row ">
+                    <div class="col">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
+                            <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0" />
+                            <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1" />
+                        </svg>
+                    </div>
+
+                    <div class="row fw-bold">
+                        <a href="<?php $reply = $komentar['username'] ?>" class="link-dark" style="text-decoration:none">
+                            @<?php echo $komentar['username']; ?>
+                        </a>
+                    </div>
+                    <div class="row px-4">
+                        <?php echo nl2br($decrypted_isi); ?>
                         <hr>
-                        <div class="bg-light py-2 px-3 rounded">
-                            <?php
-                            while ($komentar = mysqli_fetch_array($query)) { ?>
-                                <div class="row ">
-                                    <div class="col">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
-                                            <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0" />
-                                            <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1" />
-                                        </svg>
-                                    </div>
-
-                                    <div class="row fw-bold">
-                                        <a href="<?php $reply = $komentar['username'] ?>" class="link-dark" style="text-decoration:none">
-                                            @<?php echo $komentar['username']; ?>
-                                        </a>
-                                    </div>
-                                    <div class="row px-4">
-                                        <?php echo nl2br($komentar['isi']); ?>
-                                        <hr>
-                                    </div><?php } ?>
-                                </div>
-                        </div><br>
-                        <br>
-                        <?php
-                        if (isUserLoggedIn() || isAdminLoggedin()) {
-                        ?>
-                            <form action="komentar.php" method="POST">
-                                <div class="mb-3">
-                                    <div class="row-auto ">
-
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
-                                            <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0" />
-                                            <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1" />
-                                        </svg>
-                                        <div class="col fw-bold">
-                                            @<?php echo $username; ?>
-                                        </div>
-                                        <textarea class="form-control" id="exampleFormControlTextarea1" rows="3" cols="60" name="isi"></textarea>
-                                        <input type="hidden" value="<?php echo $berita['id_berita']; ?>" name="id_berita" />
-                                        <input type="hidden" value="<?php echo $berita['id_berita']; ?>" name="id_berita" />
-                                        <input type="hidden" value="<?php echo $berita['id_berita']; ?>" name="id_berita" />
-                                    </div>        
-                                </div>
-                                <div class="submitkomen text-end">
-                                    <button class="kirimkomen ">Kirim</button>
-                                </div>
-                            </form>
-                        <?php
-                        } else { ?>
-
-                            <div class="mb-3">
-                                <textarea class="form-control" id="exampleFormControlTextarea1" rows="3" cols="60" name="isi"></textarea>
-                            </div>
-                            <div class="submitkomen text-end">
-                                <button class="kirimkomen " href="loginuser.php">
-                                    <a href="loginuser.php" class="link-dark" style="text-decoration:none">
-                                        <?php
-                                        echo "Login terlebih dahulu.";
-                                        ?>
-                                    </a>
-                                </button>
-                            </div>
-                        <?php } ?>
                     </div>
                 </div>
+            <?php } ?>
+        </div><br>
+        <br>
+        <?php
+        if (isUserLoggedIn() || isAdminLoggedin()) {
+        ?>
+            <form action="komentar.php" method="POST">
+                <div class="mb-3">
+                    <div class="row-auto ">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
+                            <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0" />
+                            <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1" />
+                        </svg>
+                        <div class="col fw-bold">
+                            @<?php echo $username; ?>
+                        </div>
+                        <textarea class="form-control" id="exampleFormControlTextarea1" rows="3" cols="60" name="isi"></textarea>
+                        <input type="hidden" value="<?php echo $berita['id_berita']; ?>" name="id_berita" />
+                        <input type="hidden" value="<?php echo $berita['id_berita']; ?>" name="id_berita" />
+                        <input type="hidden" value="<?php echo $berita['id_berita']; ?>" name="id_berita" />
+                    </div>        
+                </div>
+                <div class="submitkomen text-end">
+                    <button class="kirimkomen ">Kirim</button>
+                </div>
+            </form>
+        <?php
+        } else { ?>
+
+            <div class="mb-3">
+                <textarea class="form-control" id="exampleFormControlTextarea1" rows="3" cols="60" name="isi"></textarea>
+            </div>
+            <div class="submitkomen text-end">
+                <button class="kirimkomen " href="loginuser.php">
+                    <a href="loginuser.php" class="link-dark" style="text-decoration:none">
+                        <?php
+                        echo "Login terlebih dahulu.";
+                        ?>
+                    </a>
+                </button>
+            </div>
+        <?php } ?>
+    </div>
+</div>
+
             </div>
     <?php
         }
